@@ -61,7 +61,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Systems\TestSystem.cs" />
+    <Compile Include="Commands\CalculateCommand.cs" />
+    <Compile Include="Systems\ControlSystem.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
     <Page Include="MainWindow.xaml">
@@ -109,6 +110,9 @@
       <Project>{84D9A017-E4C7-4283-8D1B-186CF8BE2A62}</Project>
       <Name>LabMIO.Data</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Content\system_icon.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -1,29 +1,168 @@
-﻿using LabMIO.Systems;
+﻿using LabMIO.Commands;
+using LabMIO.Systems;
 using LiveCharts;
 using LiveCharts.Wpf;
 using System;
 using System.Linq;
+using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace LabMIO.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
-        public SeriesCollection SeriesCollection { get; set; }
+        #region Private Field
+        private double _x1;
+        private double _x2;
+        private double _x1_2;
+        private double _xout1;
+        private double _z1;
+        private double _z2;
+
+        private ControlSystem ControlSystem;
+        private double time = 0;
+        private DispatcherTimer dispatcherTimer;
+        #endregion
+
+        #region Public Properties
+        public SeriesCollection Z1SeriesCollection { get; set; }
+        public SeriesCollection Z2SeriesCollection { get; set; }
         public string[] Labels { get; set; }
         public Func<double, string> YFormatter { get; set; }
-        private ISystem System { get; }
 
-        private double time = 0;
+
+        public double x1
+        {
+            get => _x1;
+            set
+            {
+                _x1 = value;
+                OnPropertyChanged(nameof(x1));
+            }
+        }
+
+        public double x2
+        {
+            get => _x2;
+            set
+            {
+                _x2 = value;
+                OnPropertyChanged(nameof(x2));
+            }
+        }
+
+        public double x1_2
+        {
+            get => _x1_2;
+            set
+            {
+                _x1_2 = value;
+                OnPropertyChanged(nameof(x1_2));
+            }
+        }
+
+        public double xout1
+        {
+            get => _xout1;
+            set
+            {
+                _xout1 = value;
+                OnPropertyChanged(nameof(xout1));
+            }
+        }
+
+        public double z1
+        {
+            get => _z1;
+            set
+            {
+                _z1 = value;
+                OnPropertyChanged(nameof(z1));
+            }
+        }
+
+        public double z2
+        {
+            get => _z2;
+            set
+            {
+                _z2 = value;
+                OnPropertyChanged(nameof(z2));
+            }
+        }
+        #endregion
+
+        #region Commands
+        public CalculateCommand IncreaseX1
+        {
+            get => new CalculateCommand((o) => ++x1);
+        }
+        public CalculateCommand IncreaseX2
+        {
+            get => new CalculateCommand((o) => ++x2);
+        }
+        public CalculateCommand IncreaseX1_2
+        {
+            get => new CalculateCommand((o) => ++x1_2);
+        }
+        public CalculateCommand IncreaseXout1
+        {
+            get => new CalculateCommand((o) => ++xout1);
+        }
+
+        public CalculateCommand DecreaseX1
+        {
+            get => new CalculateCommand((o) => --x1);
+        }
+        public CalculateCommand DecreaseX2
+        {
+            get => new CalculateCommand((o) => --x2);
+        }
+        public CalculateCommand DecreaseX1_2
+        {
+            get => new CalculateCommand((o) => --x1_2);
+        }
+        public CalculateCommand DecreaseXout1
+        {
+            get => new CalculateCommand((o) => --xout1);
+        }
+
+        public CalculateCommand StartTimer
+        {
+            get => new CalculateCommand((o) => dispatcherTimer.Start());
+        }
+        public CalculateCommand StopTimer
+        {
+            get => new CalculateCommand((o) => dispatcherTimer.Stop());
+        }
+        #endregion
+
 
         public MainWindowViewModel()
         {
-            System = new TestSystem();
+            ControlSystem = new ControlSystem(1, 20, 25, 1);
 
-            SeriesCollection = new SeriesCollection
+            InitCharts();
+            InitTimer();
+        }
+
+        private void InitCharts()
+        {
+            Z1SeriesCollection = new SeriesCollection
             {
                 new LineSeries
                 {
-                    Title = "Series 1",
+                    Title = "Z1",
+                    Values = new ChartValues<double>(),
+                    PointGeometry = null
+                }
+            };
+
+            Z2SeriesCollection = new SeriesCollection
+            {
+                new LineSeries
+                {
+                    Title = "Z2",
                     Values = new ChartValues<double>(),
                     PointGeometry = null
                 }
@@ -31,20 +170,29 @@ namespace LabMIO.ViewModels
 
             Labels = null;
             YFormatter = value => value.ToString();
+        }
 
-
-            System.Windows.Threading.DispatcherTimer dispatcherTimer = new System.Windows.Threading.DispatcherTimer();
+        private void InitTimer()
+        {
+            dispatcherTimer = new System.Windows.Threading.DispatcherTimer();
             dispatcherTimer.Tick += new EventHandler(CalculateSystem);
-            dispatcherTimer.Interval = new TimeSpan(3000);
-            dispatcherTimer.Start();
-
+            dispatcherTimer.Interval = new TimeSpan(1000);
         }
 
         private void CalculateSystem(object sender, EventArgs e)
         {
-            var result = System.Next(1);
-            //Labels.Append(time.ToString());
-            SeriesCollection[0].Values.Add(result);
+            z1 = ControlSystem.CalculateZ1(x1,x2,x1_2,xout1);
+            z2 = ControlSystem.CalculateZ2(x1, x2, x1_2);
+            Z1SeriesCollection[0].Values.Add(z1);
+            Z2SeriesCollection[0].Values.Add(z2);
+            if(Z1SeriesCollection[0].Values.Count > 200)
+            {
+                Z1SeriesCollection[0].Values.RemoveAt(0);
+            }
+            if (Z2SeriesCollection[0].Values.Count > 200)
+            {
+                Z2SeriesCollection[0].Values.RemoveAt(0);
+            }
             time += 0.05;
         }
     }
