@@ -29,38 +29,87 @@
                         Margin="20"
                         Command="{Binding StopTimer}"
                         Content="Stop" />
+                <Button Width="100"
+                        Height="30"
+                        Margin="20"
+                        Command="{Binding x10}"
+                        Content="x10" />
+                <CheckBox Width="100"
+                          Height="30"
+                          Margin="20"
+                          Command="{Binding ChangeMode}"
+                          Content="Auto"
+                          IsChecked="{Binding ControlSystem.IsAuto}" />
+
             </StackPanel>
         </StackPanel>
         <StackPanel Grid.Row="1"
-                    HorizontalAlignment="Center"
+                    HorizontalAlignment="Stretch"
                     Orientation="Horizontal">
-            <StackPanel VerticalAlignment="Center" Orientation="Vertical">
-                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+
+            <Grid Margin="400,0,0,0"
+                  HorizontalAlignment="Right"
+                  VerticalAlignment="Center"
+                  Visibility="{Binding PIDSettingsVisability}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Label Grid.Row="0"
+                       Grid.Column="0"
+                       Content="K" />
+                <TextBox Grid.Row="0"
+                         Grid.Column="1"
+                         Width="50"
+                         Text="{Binding PID.K}" />
+                <Label Grid.Row="1"
+                       Grid.Column="0"
+                       Content="Ki" />
+                <TextBox Grid.Row="1"
+                         Grid.Column="1"
+                         Width="50"
+                         Text="{Binding PID.Ki}" />
+                <Label Grid.Row="2"
+                       Grid.Column="0"
+                       Content="Kd" />
+                <TextBox Grid.Row="2"
+                         Grid.Column="1"
+                         Width="50"
+                         Text="{Binding PID.Kd}" />
+            </Grid>
+            <Grid Margin="0,0,500,0" HorizontalAlignment="Stretch">
+                <Image Source="/Content/system_icon.png" />
+                <StackPanel Margin="190,21,-0.4,260.8" Orientation="Horizontal">
                     <Label Content="x1" />
                     <Button Command="{Binding IncreaseX1}" Content="⇧" />
                     <TextBox Text="{Binding x1}" />
                     <Button Command="{Binding DecreaseX1}" Content="⇩" />
                 </StackPanel>
-                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                <StackPanel Margin="80,227,0.6,54.8" Orientation="Horizontal">
                     <Label Content="x2" />
                     <Button Command="{Binding IncreaseX2}" Content="⇧" />
                     <TextBox Text="{Binding x2}" />
                     <Button Command="{Binding DecreaseX2}" Content="⇩" />
                 </StackPanel>
-                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                <StackPanel Margin="234,247,0.6,35.8" Orientation="Horizontal">
                     <Label Content="x1-2" />
                     <Button Command="{Binding IncreaseX1_2}" Content="⇧" />
                     <TextBox Text="{Binding x1_2}" />
                     <Button Command="{Binding DecreaseX1_2}" Content="⇩" />
                 </StackPanel>
-                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                <StackPanel Margin="474,239,-0.4,43.8" Orientation="Horizontal">
                     <Label Content="xout1" />
                     <Button Command="{Binding IncreaseXout1}" Content="⇧" />
                     <TextBox Text="{Binding xout1}" />
                     <Button Command="{Binding DecreaseXout1}" Content="⇩" />
                 </StackPanel>
-            </StackPanel>
-            <Image Source="/Content/system_icon.png" />
+            </Grid>
+
             <StackPanel VerticalAlignment="Center" Orientation="Vertical">
                 <StackPanel Orientation="Horizontal">
                     <Label Content="Z1" />
@@ -75,23 +124,12 @@
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <lvc:CartesianChart Grid.Column="0"
                                 LegendLocation="Right"
-                                Series="{Binding Z1SeriesCollection}">
+                                Series="{Binding ZSeriesCollection}">
                 <lvc:CartesianChart.AxisY>
-                    <lvc:Axis Title="Z1" LabelFormatter="{Binding YFormatter}" />
-                </lvc:CartesianChart.AxisY>
-                <lvc:CartesianChart.AxisX>
-                    <lvc:Axis Title="t" Labels="{Binding Labels}" />
-                </lvc:CartesianChart.AxisX>
-            </lvc:CartesianChart>
-            <lvc:CartesianChart Grid.Column="1"
-                                LegendLocation="Right"
-                                Series="{Binding Z2SeriesCollection}">
-                <lvc:CartesianChart.AxisY>
-                    <lvc:Axis Title="Z2" LabelFormatter="{Binding YFormatter}" />
+                    <lvc:Axis Title="Z" LabelFormatter="{Binding YFormatter}" />
                 </lvc:CartesianChart.AxisY>
                 <lvc:CartesianChart.AxisX>
                     <lvc:Axis Title="t" Labels="{Binding Labels}" />

@@ -44,9 +44,12 @@
     <Compile Include="Blocks\AperiodicBlock.cs" />
     <Compile Include="Blocks\BaseRememberBlock.cs" />
     <Compile Include="Blocks\ComplexBlock.cs" />
+    <Compile Include="Blocks\DelayBlock.cs" />
     <Compile Include="Blocks\DiffBlock.cs" />
     <Compile Include="Blocks\GainBlock.cs" />
-    <Compile Include="Blocks\IntergralBlock.cs" />
+    <Compile Include="Blocks\IntegralBlock.cs" />
+    <Compile Include="Blocks\NoizeBlock.cs" />
+    <Compile Include="Blocks\PIDBlock.cs" />
     <Compile Include="Interfaces\IBlock.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -7,9 +7,9 @@ using System.Windows.Input;
 
 namespace LabMIO.Commands
 {
-    public class CalculateCommand : ICommand
+    public class Command : ICommand
     {
-        private Action<object> execute;
+        private Action execute;
         private Func<object, bool> canExecute;
 
         public event EventHandler CanExecuteChanged
@@ -18,7 +18,7 @@ namespace LabMIO.Commands
             remove { CommandManager.RequerySuggested -= value; }
         }
 
-        public CalculateCommand(Action<object> execute, Func<object, bool> canExecute = null)
+        public Command(Action execute, Func<object, bool> canExecute = null)
         {
             this.execute = execute;
             this.canExecute = canExecute;
@@ -31,7 +31,7 @@ namespace LabMIO.Commands
 
         public void Execute(object parameter)
         {
-            this.execute(parameter);
+            this.execute();
         }
     }
 }

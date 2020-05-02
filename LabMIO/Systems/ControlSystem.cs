@@ -1,5 +1,5 @@
 ﻿using LabMIO.Data.Blocks;
-using LabMIO.Data.Interfaces;
+using LabMIO.Objects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,57 +8,37 @@ using System.Threading.Tasks;
 
 namespace LabMIO.Systems
 {
-    class ControlSystem
+    public class ControlSystem
     {
-        #region Blocks
-        private GainBlock K10;
-        private GainBlock K11;
-        private GainBlock K12;
-        private GainBlock K13;
-        private GainBlock K14;
-        private GainBlock K15;
+        private ObjectModel _obj;
+        private PIDBlock _pid;
+        private double _dt;
+        public double Time { get; set; }
+        public double Z1 { get; set; }
+        public double Z2 { get; set; }
+        public bool IsAuto { get; set; }
 
-        private AperiodicBlock AperiodicBlockZ1;
-        private AperiodicBlock AperiodicBlockZ2;
-        #endregion
-
-        #region Ctor
-        public ControlSystem(double k, double T1, double T2, double dt)
+        public ControlSystem(PIDBlock pid, double dt)
         {
-            K10 = new GainBlock(k);
-            K11 = new GainBlock(k);
-            K12 = new GainBlock(k);
-            K13 = new GainBlock(k);
-            K14 = new GainBlock(k);
-            K15 = new GainBlock(k);
+            this._dt = dt;
+            _obj = new ObjectModel(1, 20, 25, 1, 1, dt);
+            _pid = pid;
 
-            AperiodicBlockZ1 = new AperiodicBlock(T1, dt);
-            AperiodicBlockZ2 = new AperiodicBlock(T2, dt);
         }
-        #endregion
-
-        public double CalculateZ2(double x1, double x2, double x1_2)
+        public void Calculate(double x1, double x2, double x1_2, double xout1)
         {
-            var k10out = K10.CalculateOutput(x1);
-            var k11out = K11.CalculateOutput(x2);
-            var k12out = K12.CalculateOutput(x1_2);
-
-            var z2input = k10out + k11out - k12out;
-            var z2output = AperiodicBlockZ2.CalculateOutput(z2input);
-            return z2output;
+            Time += _dt;
+            var objX1 = x1;
+            if(IsAuto)
+            {
+                var pidInput = x1 - _obj.Z2;
+                objX1 = _pid.CalculateOutput(pidInput);
+            }
+            
+            _obj.Calculate(objX1, x2, x1_2, xout1);
+            Z1 = _obj.Z1;
+            Z2 = _obj.Z2;
         }
 
-        public double CalculateZ1(double x1, double x2, double x1_2, double xout1)
-        {
-            var k13output = K13.CalculateOutput(x1_2);
-            var k15output = K15.CalculateOutput(xout1);
-
-            var z2output = CalculateZ2(x1, x2, x1_2);
-            var k14output = K14.CalculateOutput(z2output);
-            var z1input = k13output + k14output - k15output;
-            var z1output = AperiodicBlockZ1.CalculateOutput(z1input);
-
-            return z1input;
-        }
     }
 }

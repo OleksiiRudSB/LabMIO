@@ -1,9 +1,11 @@
 ﻿using LabMIO.Commands;
+using LabMIO.Data.Blocks;
 using LabMIO.Systems;
 using LiveCharts;
 using LiveCharts.Wpf;
 using System;
 using System.Linq;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
 
@@ -12,154 +14,155 @@ namespace LabMIO.ViewModels
     public class MainWindowViewModel : ViewModelBase
     {
         #region Private Field
+        private bool _isX10;
+        private Visibility _pidSettingsVisability;
         private double _x1;
         private double _x2;
         private double _x1_2;
         private double _xout1;
         private double _z1;
         private double _z2;
+        private PIDBlock _pid;
 
-        private ControlSystem ControlSystem;
+        private ControlSystem _controlSystem;
         private double time = 0;
         private DispatcherTimer dispatcherTimer;
         #endregion
 
         #region Public Properties
-        public SeriesCollection Z1SeriesCollection { get; set; }
-        public SeriesCollection Z2SeriesCollection { get; set; }
+        public SeriesCollection ZSeriesCollection { get; set; }
         public string[] Labels { get; set; }
         public Func<double, string> YFormatter { get; set; }
 
 
+        public ControlSystem ControlSystem 
+        {
+            get => _controlSystem;
+            set => SetProperty(ref _controlSystem, value);
+        }
+
+        public PIDBlock PID
+        {
+            get => _pid;
+            set => SetProperty(ref _pid, value);
+        }
+
+        public Visibility PIDSettingsVisability
+        {
+            get => _pidSettingsVisability;
+            set => SetProperty(ref _pidSettingsVisability, value);
+        }
+
         public double x1
         {
             get => _x1;
-            set
-            {
-                _x1 = value;
-                OnPropertyChanged(nameof(x1));
-            }
+            set => SetProperty<double>(ref _x1, value);
         }
 
         public double x2
         {
             get => _x2;
-            set
-            {
-                _x2 = value;
-                OnPropertyChanged(nameof(x2));
-            }
+            set => SetProperty<double>(ref _x2, value);
         }
 
         public double x1_2
         {
             get => _x1_2;
-            set
-            {
-                _x1_2 = value;
-                OnPropertyChanged(nameof(x1_2));
-            }
+            set => SetProperty<double>(ref _x1_2, value);
         }
 
         public double xout1
         {
             get => _xout1;
-            set
-            {
-                _xout1 = value;
-                OnPropertyChanged(nameof(xout1));
-            }
+            set => SetProperty<double>(ref _xout1, value);
         }
 
         public double z1
         {
             get => _z1;
-            set
-            {
-                _z1 = value;
-                OnPropertyChanged(nameof(z1));
-            }
+            set => SetProperty<double>(ref _z1, value);
         }
 
         public double z2
         {
             get => _z2;
-            set
-            {
-                _z2 = value;
-                OnPropertyChanged(nameof(z2));
-            }
+            set => SetProperty<double>(ref _z2, value);
         }
         #endregion
 
         #region Commands
-        public CalculateCommand IncreaseX1
-        {
-            get => new CalculateCommand((o) => ++x1);
-        }
-        public CalculateCommand IncreaseX2
-        {
-            get => new CalculateCommand((o) => ++x2);
-        }
-        public CalculateCommand IncreaseX1_2
-        {
-            get => new CalculateCommand((o) => ++x1_2);
-        }
-        public CalculateCommand IncreaseXout1
-        {
-            get => new CalculateCommand((o) => ++xout1);
-        }
+        public ICommand ChangeMode { get; set; }
+        public ICommand x10 { get; set; }
+        public ICommand IncreaseX1 { get; set; }
+        public ICommand IncreaseX2 { get; set; }
+        public ICommand IncreaseX1_2 { get; set; }
+        public ICommand IncreaseXout1 { get; set; }
+        public ICommand DecreaseX1 { get; set; }
+        public ICommand DecreaseX2 { get; set; }
+        public ICommand DecreaseX1_2 { get; set; }
+        public ICommand DecreaseXout1 { get; set; }
+        public ICommand StartTimer { get; set; }
+        public ICommand StopTimer { get; set; }
+        #endregion
 
-        public CalculateCommand DecreaseX1
+        #region Ctor
+        public MainWindowViewModel()
         {
-            get => new CalculateCommand((o) => --x1);
-        }
-        public CalculateCommand DecreaseX2
-        {
-            get => new CalculateCommand((o) => --x2);
-        }
-        public CalculateCommand DecreaseX1_2
-        {
-            get => new CalculateCommand((o) => --x1_2);
-        }
-        public CalculateCommand DecreaseXout1
-        {
-            get => new CalculateCommand((o) => --xout1);
-        }
+            var dt = 1;
+            PID = new PIDBlock(1, 1, 1, dt);
+            ControlSystem = new ControlSystem(PID, dt);
 
-        public CalculateCommand StartTimer
-        {
-            get => new CalculateCommand((o) => dispatcherTimer.Start());
-        }
-        public CalculateCommand StopTimer
-        {
-            get => new CalculateCommand((o) => dispatcherTimer.Stop());
+            InitCommands();
+            InitCharts();
+            InitTimer();
+            SetVisability();
         }
         #endregion
 
-
-        public MainWindowViewModel()
+        #region Privete Methods
+        private void InitCommands()
         {
-            ControlSystem = new ControlSystem(1, 20, 25, 1);
+            ChangeMode = new Command(() => ChangeSystemMode());
+            x10 = new Command(() => SetTimer());
+            IncreaseX1 = new Command(() => ++x1);
+            IncreaseX2 = new Command(() => ++x2);
+            IncreaseX1_2 = new Command(() => ++x1_2);
+            IncreaseXout1 = new Command(() => ++xout1);
+            DecreaseX1 = new Command(() => --x1);
+            DecreaseX2 = new Command(() => --x2);
+            DecreaseX1_2 = new Command(() => --x1_2);
+            DecreaseXout1 = new Command(() => --xout1);
+            StartTimer = new Command(() => dispatcherTimer.Start());
+            StopTimer = new Command(() => dispatcherTimer.Stop());
+        }
 
-            InitCharts();
-            InitTimer();
+        private void ChangeSystemMode()
+        {
+            PID.IsAuto = ControlSystem.IsAuto;
+            SetVisability();
+        }
+
+        private void SetTimer()
+        {
+            _isX10 = !_isX10;
+            dispatcherTimer.Interval = new TimeSpan(_isX10 ? 100 : 1000);
+        }
+
+        private void SetVisability()
+        {
+            PIDSettingsVisability = ControlSystem.IsAuto ? Visibility.Visible : Visibility.Hidden;
         }
 
         private void InitCharts()
         {
-            Z1SeriesCollection = new SeriesCollection
+            ZSeriesCollection = new SeriesCollection
             {
                 new LineSeries
                 {
                     Title = "Z1",
                     Values = new ChartValues<double>(),
                     PointGeometry = null
-                }
-            };
-
-            Z2SeriesCollection = new SeriesCollection
-            {
+                },
                 new LineSeries
                 {
                     Title = "Z2",
@@ -181,19 +184,21 @@ namespace LabMIO.ViewModels
 
         private void CalculateSystem(object sender, EventArgs e)
         {
-            z1 = ControlSystem.CalculateZ1(x1,x2,x1_2,xout1);
-            z2 = ControlSystem.CalculateZ2(x1, x2, x1_2);
-            Z1SeriesCollection[0].Values.Add(z1);
-            Z2SeriesCollection[0].Values.Add(z2);
-            if(Z1SeriesCollection[0].Values.Count > 200)
+            ControlSystem.Calculate(x1, x2, x1_2, xout1);
+            z1 = ControlSystem.Z1;
+            z2 = ControlSystem.Z2;
+            ZSeriesCollection[0].Values.Add(z1);
+            ZSeriesCollection[1].Values.Add(z2);
+            if(ZSeriesCollection[0].Values.Count > 100)
             {
-                Z1SeriesCollection[0].Values.RemoveAt(0);
+                ZSeriesCollection[0].Values.RemoveAt(0);
             }
-            if (Z2SeriesCollection[0].Values.Count > 200)
+            if (ZSeriesCollection[1].Values.Count > 100)
             {
-                Z2SeriesCollection[0].Values.RemoveAt(0);
+                ZSeriesCollection[1].Values.RemoveAt(0);
             }
             time += 0.05;
         }
+        #endregion
     }
 }

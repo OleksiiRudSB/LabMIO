@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 
 namespace LabMIO.Data.Blocks
 {
-    public class IntergralBlock : BaseRememberBlock
+    public class IntegralBlock : BaseRememberBlock
     {
         private double sum = 0;
-        public IntergralBlock(double dt) : base(dt)
+        public IntegralBlock(double dt) : base(dt)
         {
         }
 
