@@ -23,6 +23,8 @@ namespace LabMIO.Data.Blocks
         public double Ki { get; set; }
         public double Kd { get; set; }
 
+        public double Output { get; set; }
+
         public PIDBlock(double k, double ki, double kd, double dt) : base(dt)
         {
             K = k;
@@ -62,7 +64,9 @@ namespace LabMIO.Data.Blocks
 
             _previous = input;
 
-            return K * result;
+            Output = K * result;
+
+            return Output;
         }
     }
 }

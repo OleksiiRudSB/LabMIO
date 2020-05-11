@@ -15,7 +15,9 @@ namespace LabMIO.ViewModels
     {
         #region Private Field
         private bool _isX10;
-        private Visibility _pidSettingsVisability;
+        private Visibility _pidOutputVisibility;
+        private Visibility _x1SettingsVisibility;
+        private double _task;
         private double _x1;
         private double _x2;
         private double _x1_2;
@@ -23,6 +25,7 @@ namespace LabMIO.ViewModels
         private double _z1;
         private double _z2;
         private PIDBlock _pid;
+        private double _pidOutput;
 
         private ControlSystem _controlSystem;
         private double time = 0;
@@ -47,10 +50,28 @@ namespace LabMIO.ViewModels
             set => SetProperty(ref _pid, value);
         }
 
-        public Visibility PIDSettingsVisability
+        public double Task 
         {
-            get => _pidSettingsVisability;
-            set => SetProperty(ref _pidSettingsVisability, value);
+            get => _task;
+            set => SetProperty(ref _task, value);
+        }
+
+        public double PidOutput
+        {
+            get => _pidOutput;
+            set => SetProperty(ref _pidOutput, value);
+        }
+
+        public Visibility PidOutputVisibility
+        {
+            get => _pidOutputVisibility;
+            set => SetProperty(ref _pidOutputVisibility, value);
+        }
+
+        public Visibility X1SettingsVisibility
+        {
+            get => _x1SettingsVisibility;
+            set => SetProperty(ref _x1SettingsVisibility, value);
         }
 
         public double x1
@@ -139,6 +160,10 @@ namespace LabMIO.ViewModels
         private void ChangeSystemMode()
         {
             PID.IsAuto = ControlSystem.IsAuto;
+            if(!ControlSystem.IsAuto)
+            {
+                x1 = PID.Output;
+            }
             SetVisability();
         }
 
@@ -150,7 +175,8 @@ namespace LabMIO.ViewModels
 
         private void SetVisability()
         {
-            PIDSettingsVisability = ControlSystem.IsAuto ? Visibility.Visible : Visibility.Hidden;
+            PidOutputVisibility = ControlSystem.IsAuto ? Visibility.Visible : Visibility.Hidden;
+            X1SettingsVisibility = ControlSystem.IsAuto ? Visibility.Hidden : Visibility.Visible;
         }
 
         private void InitCharts()
@@ -184,11 +210,12 @@ namespace LabMIO.ViewModels
 
         private void CalculateSystem(object sender, EventArgs e)
         {
-            ControlSystem.Calculate(x1, x2, x1_2, xout1);
+            ControlSystem.Calculate(ControlSystem.IsAuto ? Task : x1, x2, x1_2, xout1);
             z1 = ControlSystem.Z1;
             z2 = ControlSystem.Z2;
             ZSeriesCollection[0].Values.Add(z1);
             ZSeriesCollection[1].Values.Add(z2);
+            PidOutput = PID.Output;
             if(ZSeriesCollection[0].Values.Count > 100)
             {
                 ZSeriesCollection[0].Values.RemoveAt(0);
